@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=1000, initial-scale=1.0">
+    <title>Timer</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+    <style>
+        .contain {
+            margin: auto;
+            width: 500px;
+            height: 500px;
+            background: rgb(165, 165, 231);
+        }
+
+        .rowEdit {
+            display: block;
+            padding-top: 100px;
+        }
+    </style>
+
+</head>
+
+<body>
+    <section class="text-center container contain">
+
+
+
+        <div class="row rowEdit">
+            <button type="button" class="btn btn-primary startTimer" onclick="startTimer()"> Start Timer</button>
+            <button type="button" class="btn btn-primary stopTimer" onclick="stopTimer()">Stop Timer</button>
+            <button type="button" class="btn btn-primary sendData" onclick="save(obj)">Send Data</button>
+        </div>
+
+        <div class="row rowEdit">
+            <p>Previous Time Difference: <span class="difference"></span>ms</p>
+        </div>
+
+        <div class="row rowEdit">
+            <p><a href="index.html">Home </a> | <a href="report.html"> Reports</a></p>
+        </div>
+
+
+
+    </section>
+    <script>
+
+        let i = 0;
+        let dataset = 0;
+        let arr = []
+        let lastValue = 0;
+        let obj = {}
+        let previousKeyPress = 0, currentPress = 0, idleTime = 0;
+        let t;
+
+        function startTimer() {
+
+            i++;
+            currentPress++;
+            idleTime++;
+            //idle time check
+            if (idleTime >= 5000) {
+                i = 0;
+            }
+            t = setTimeout(startTimer, 1)
+        }
+
+        function stopTimer() {
+
+            clearTimeout(t)
+            obj[dataset] = arr;
+            arr = [];
+            dataset = 0;
+            i = 0;
+            currentPress = 0, previousKeyPress = 0, idleTime = 0;
+        }
+
+        document.addEventListener("keydown", function (event) {
+
+            if (event.keyCode == 65) {
+
+
+                if (idleTime >= 5000) {
+                    obj[dataset] = arr
+                    dataset++;
+                    arr = []
+                    idleTime = 0;
+                    i = 0;
+                    lastValue = 0;
+                }
+
+                document.getElementsByClassName("difference")[0].innerHTML = currentPress - previousKeyPress;
+                let total = lastValue + i;
+                arr.push(total)
+                lastValue = total
+                previousKeyPress = currentPress;
+                idleTime = 0;
+            }
+        });
+
+
+
+        function save() {
+
+            fetch('http://localhost:5000/api/save', {
+                method: 'POST', // or 'PUT'
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ dataSetObj: obj }),
+            })
+                .then(response => response.json())
+                .then(resData => alert(resData.data));
+        }
+
+
+    </script>
+</body>
+
+
+</html>

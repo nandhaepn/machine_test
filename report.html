@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=1000, initial-scale=1.0">
+    <title>Timer</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+    <style>
+        .contain {
+            margin: auto;
+            width: 1000px;
+            height: 500px;
+            /* background: rgb(165, 165, 231); */
+        }
+
+        .rowEdit {
+            display: block;
+            padding-top: 100px;
+        }
+    </style>
+
+</head>
+
+<body>
+    <section class="text-center container contain">
+
+
+        <table class="table">
+            <thead class="thead-dark">
+                <tr>
+                    <th scope="col">Id</th>
+                    <th scope="col">Datasets</th>
+                    <th scope="col">Created On</th>
+                    <th scope="col">Action/Select</th>
+                </tr>
+            </thead>
+            <tbody class="tBody">
+
+            </tbody>
+        </table>
+
+
+        <div class="row rowEdit">
+
+            <button type="button" class="btn btn-primary startTimer" onclick="calculateAvg()">Calculate Avg</button>
+            <br> <br>
+
+            <p><a href="index.html">Home </a> | <a href="report.html"> Reports</a></p>
+        </div>
+
+
+
+    </section>
+    <script>
+        let tableBody = document.getElementsByClassName("tBody")
+
+
+        fetch('http://localhost:5000/api/getData', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+            .then(response => response.json())
+            .then(resData => {
+                let i = 1;
+                resData.data.forEach(element => {
+                    let row1 = document.createElement("TR")
+                    row1.innerHTML = `<td>${i}</td><td>${element.data}</td><td>${element.createdOn}</td><td><input type="checkbox" name="checkBox" value=${element._id} /></td>`
+                    tableBody[0].appendChild(row1)
+                    i++
+                });
+
+            })
+
+        function calculateAvg() {
+            let checkBoxes = document.getElementsByName("checkBox")
+            let checkedchcBox = [];
+            for (let i = 0; i < checkBoxes.length; i++) {
+                if (checkBoxes[i].checked) {
+                    checkedchcBox.push(checkBoxes[i].value)
+                }
+
+            }
+            if (checkedchcBox.length == 0) {
+                alert("Please select the data set...")
+                return;
+            }
+            fetch('http://localhost:5000/api/get-average', {
+                method: 'POST', // or 'PUT'
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ listOfId: checkedchcBox }),
+            })
+                .then(response => response.json())
+                .then(resData => {
+                    alert(resData.data)
+                });
+        }
+
+    </script>
+</body>
+
+
+</html>
